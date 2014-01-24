@@ -6,14 +6,14 @@ var Vote = require('SocialChoice');
 
 var vote = new Vote();
 var fileId = Date.now();
-var votesFile = "./votes-"+(fileId)+".js";
-var peopleLogFile = "./votes-"+(fileId)+".txt";
+var votesFile = "./logs/votes-"+(fileId)+".js";
+var peopleLogFile = "./logs/votes-"+(fileId)+".txt";
 
 var peopleVoted = {};
 
 
 fs.appendFileSync(votesFile, "var vote = new (require('SocialChoice'));\n" +
-		"var registerVote = require('./voteutils').registerVote;\n" +
+		"var registerVote = require('../voteutils').registerVote;\n" +
 		"var allVotes = [];\n" +
 		"var voteLog = {};\n" +
 		"module.exports = vote;\n\n");
