@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html>
+<head>
+	<title>Hackday V</title>
+	<meta charset="utf-8">
+	<script src="data.js"></script>
+	<script src="vendor/jquery-1.9.1.js"></script>
+	<script src="vendor/jquery-ui-1.10.3.custom.js"></script>
+	<link rel="stylesheet" href="styles.css" />
+	<style>
+		body {
+			margin: 0;
+			padding: 0;
+		}
+		.sortable {
+			list-style-type: none;
+			width: 50%;
+			margin: 0;
+			padding: 0;
+			height: 2000px;
+			float: left;
+		}
+
+		#myteam {
+			background-color: #fffba3;
+			height: 100px;
+			float: left;
+			width: 50%;
+		}
+		#unranked {
+			background-color: grey;
+			height: 1900px;
+		}
+
+		#teams {
+			background-color: #ff98b6;
+		}
+
+		#control {
+			height: 60px;
+		}
+
+		div span {
+			padding: 4px;
+		}
+
+		p {
+			margin-top: 2px;
+			padding-top: 0;
+		}
+
+		body {
+			font-family: "Verdana", sans-serif;
+		}
+		#control {
+			padding: 6px;
+			border-bottom: 1px solid #909090;
+		}
+
+		.names {
+			font-size: xx-small;
+			width: 200px;
+		}
+	</style>
+</head>
+<body>
+
+	<div id='control'>
+		<p>You are <span id='name'></span> (not true? <a href="http://adami.caplin.com">reload</a> the page). Rank the below teams by dragging them into the right order:</p>
+		<p>When you're ready <button onclick="outClick()">submit your vote</button></p>
+	</div>
+
+	<div id='teams' class='sortable team'>
+		<span>Put the teams you like in order here</span>
+	</div>
+	<div id='myteam' class='sortable team'>
+		<span>Place your team here if you have one</span>
+	</div>
+	<div id='unranked' class='sortable team'>
+		<span>All teams here are considered to be joint last</span>
+	</div>
+
+	<script>
+
+		var myName = window.prompt("Please enter your name\nVotes with names I can't verify won't be counted.\nNames that vote twice will be investigated.").trim();
+		document.getElementById('name').innerHTML = myName;
+
+		var teamsDiv = document.getElementById('teams');
+		var unrankedDiv = document.getElementById('unranked');
+		var myTeamDiv = document.getElementById('myteam');
+
+		for (var i = 0; i < teams.length; ++i) {
+			var team = teams[i];
+			var teamElement = makeTeamElement(team);
+			unrankedDiv.appendChild(teamElement);
+		}
+
+		function makeTeamElement(team) {
+			var teamName = team.name;
+			var members = team.members;
+			var membersEl = document.createElement('div');
+			membersEl.className = "members";
+			for (var i = 0; i < members.length; ++i) {
+				var li = document.createElement('li');
+				li.innerHTML = members[i];
+				membersEl.appendChild(li)
+			}
+			var teamEl = document.createElement('li');
+			teamEl.setAttribute('id', teamName);
+			teamEl.className = "team";
+			teamEl.innerHTML = teamName;
+			teamEl.appendChild(membersEl);
+			return teamEl;
+		}
+
+		var sortableRanked = $(teamsDiv);
+		var sortableUnranked = $(unrankedDiv);
+		var myTeamJ = $(myTeamDiv);
+		myTeamJ.sortable({
+			items: "> li",
+			connectWith: [sortableUnranked, sortableRanked],
+			receive: function() {
+				myTeamJ.sortable("disable");
+			}
+		});
+		sortableUnranked.sortable({
+			items: "> li",
+			connectWith: [sortableRanked, myTeamJ]
+		});
+		sortableRanked.sortable({
+			items: "> li",
+			connectWith: [sortableUnranked, myTeamJ]
+		});
+		sortableUnranked.disableSelection();
+		sortableRanked.disableSelection();
+
+		function outClick() {
+			var myVote = [];
+			var jointLast = [];
+			var myTeam = null;
+			for (var i = 0; i < teamsDiv.children.length; ++i) {
+				var child = teamsDiv.children[i];
+				if (child.tagName === 'LI') {
+					myVote.push(child.id);
+				}
+			}
+			for (var i = 0; i < unrankedDiv.children.length; ++i) {
+				var child = unrankedDiv.children[i];
+				if (child.tagName === 'LI') {
+					jointLast.push(child.id);
+				}
+			}
+			for (var i = 0; i < myTeamDiv.children.length; ++i) {
+				var child = myTeamDiv.children[i];
+				if (child.tagName === 'LI') {
+					myTeam = child.id;
+				}
+			}
+
+
+			var check = confirm("Please check that the following is correct:\nYour name is "+myName+"\n"
+					+(myTeam?("You are on team "+myTeam+"\n"):"")
+					+"You want to vote for:\n\t"+myVote.map(function(n, idx){return (idx+1)+". "+n}).join("\n\t"));
+
+			if (check) {
+				myVote.push(jointLast);
+				var voteRecord = {name: myName, team: myTeam, vote: myVote};
+
+				var string = JSON.stringify(voteRecord);
+				console.log(string);
+				var xhr = new XMLHttpRequest();
+				xhr.open('get', '/submit?vote='+string, false);
+				xhr.send();
+				console.log(xhr);
+				if (xhr.status === 200) {
+					if (xhr.responseText == "Already voted") {
+						alert("You have already voted.  Please contact Adam and tell him which vote should count.");
+					} else {
+						alert('Your vote has been counted.');
+					}
+				} else {
+					alert('Something went wrong.');
+				}
+			}
+		}
+	</script>
+
+</body>
+</html>
