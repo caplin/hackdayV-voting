@@ -11,6 +11,6 @@
   "license": "BSD",
   "dependencies": {
     "express": "~3.4.8",
-    "SocialChoice": "it+http://github.com/kybernetikos/SocialChoice.git#gh-pages"
+    "SocialChoice": "git+http://github.com/kybernetikos/SocialChoice.git#gh-pages"
   }
 }
