@@ -4,7 +4,7 @@ var fs = require('fs');
 
 var Vote = require('SocialChoice');
 
-var vote = new Vote();
+var vote = new Vote(({transform:[]}));
 var fileId = Date.now();
 var votesFile = "./logs/votes-"+(fileId)+".js";
 var peopleLogFile = "./logs/votes-"+(fileId)+".txt";
@@ -12,7 +12,7 @@ var peopleLogFile = "./logs/votes-"+(fileId)+".txt";
 var peopleVoted = {};
 
 
-fs.appendFileSync(votesFile, "var vote = new (require('SocialChoice'));\n" +
+fs.appendFileSync(votesFile, "var vote = new (require('SocialChoice'))({transform:[]});\n" +
 		"var registerVote = require('../voteutils').registerVote;\n" +
 		"var allVotes = [];\n" +
 		"var voteLog = {};\n" +
